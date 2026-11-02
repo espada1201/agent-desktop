@@ -197,3 +197,59 @@ fn app_filter_results_are_not_discarded_by_display_name() {
 
     assert_eq!(value["focused"]["id"], "w1");
 }
+
+#[test]
+fn focus_window_must_refuse_rejectable_sm_thumb() {
+    let thumb = WindowInfo {
+        id: "w-thumb".into(),
+        title: "App Icon Window".into(),
+        app: "WindowManager".into(),
+        pid: crate::ProcessId::new(42),
+        process_instance: Some("test-instance".into()),
+        bounds: Some(crate::Rect {
+            x: -7.0,
+            y: 842.0,
+            width: 66.0,
+            height: 82.0,
+        }),
+        state: crate::WindowState {
+            is_focused: false,
+            accessible: false,
+            minimized: None,
+            visible: Some(true),
+        },
+    };
+    let mut focused = thumb.clone();
+    focused.state.is_focused = true;
+    let adapter = FocusAdapter {
+        windows: vec![thumb],
+        focused_windows: Mutex::new(vec![focused]),
+        focused_window_calls: Mutex::new(0),
+        focused_window_supported: true,
+    };
+
+    let error = execute(
+        FocusWindowArgs {
+            window_id: Some("w-thumb".into()),
+            app: None,
+            title: None,
+        },
+        &adapter,
+    )
+    .expect_err("RejectableSmThumb must not be focus-bound");
+
+    assert_eq!(error.code(), "POLICY_DENIED");
+    let crate::AppError::Adapter(adapter_error) = error else {
+        panic!("expected adapter POLICY_DENIED");
+    };
+    assert_eq!(
+        adapter_error.details.as_ref().unwrap()["kind"],
+        "rejectable_sm_thumb"
+    );
+    assert_eq!(
+        adapter_error.details.as_ref().unwrap()["window_class"],
+        "rejectable_sm_thumb"
+    );
+    assert_eq!(*adapter.focused_window_calls.lock().unwrap(), 0);
+}
+

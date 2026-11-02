@@ -133,6 +133,7 @@ fn resolve_target(
             adapter,
             deadline,
         )?;
+        refuse_rejectable_sm_thumb(&win)?;
         return Ok(ScreenshotTarget::ExactWindow(win));
     }
 

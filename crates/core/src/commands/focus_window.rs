@@ -1,5 +1,5 @@
 use crate::{
-    AppError,
+    AppError, refuse_rejectable_sm_thumb,
     adapter::{PlatformAdapter, WindowFilter},
 };
 use serde_json::{Value, json};
@@ -40,6 +40,7 @@ pub fn execute(args: FocusWindowArgs, adapter: &dyn PlatformAdapter) -> Result<V
             .with_suggestion("Run 'list-windows' to see available windows and their IDs."),
         "More than one window matches the focus target",
     )?;
+    refuse_rejectable_sm_thumb(&window)?;
 
     let window_id = window.id.clone();
     let lease = adapter.acquire_interaction_lease(deadline)?;
