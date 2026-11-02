@@ -133,6 +133,11 @@ pub use system::screenshot_target::ScreenshotTarget;
 pub use system::surface_info::SurfaceInfo;
 pub use system::window_filter::WindowFilter;
 pub use system::window_info::WindowInfo;
+pub use system::window_class::{
+    ClassifyFacts, ClassifyThresholds, DriveableFullAxTarget, HeadlessResolveError,
+    WindowClass, classify_window, classify_window_info, refuse_rejectable_sm_thumb,
+    resolve_for_headless_action, sm_thumb_reject_error,
+};
 pub use system::window_op::WindowOp;
 pub use system::window_readback::WindowReadback;
 pub use system::window_state::WindowState;

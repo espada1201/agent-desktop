@@ -341,5 +341,92 @@ fn output_path() -> PathBuf {
     ))
 }
 
+
+fn rejectable_sm_thumb_window(id: &str, pid: u32) -> WindowInfo {
+    WindowInfo {
+        id: id.into(),
+        title: "App Icon Window".into(),
+        app: "Example".into(),
+        pid: crate::ProcessId::new(pid),
+        process_instance: Some(format!("instance-{pid}")),
+        bounds: Some(Rect {
+            x: -7.0,
+            y: 842.0,
+            width: 66.0,
+            height: 82.0,
+        }),
+        state: crate::WindowState {
+            is_focused: false,
+            accessible: false,
+            minimized: None,
+            visible: Some(true),
+        },
+    }
+}
+
+#[test]
+fn window_id_screenshot_path_must_refuse_rejectable_sm_thumb() {
+    let thumb = rejectable_sm_thumb_window("w-thumb", 700);
+    let adapter = ScreenshotAdapter {
+        displays: vec![display("main", true, 2.0)],
+        windows: vec![thumb],
+        target: Mutex::new(None),
+        stopped: false,
+    };
+    let mut request = args();
+    request.window_id = Some("w-thumb".into());
+
+    let error = screenshot::execute(request, &adapter)
+        .expect_err("RejectableSmThumb must be refused on screenshot --window-id bind");
+
+    assert_eq!(error.code(), "POLICY_DENIED");
+    let crate::AppError::Adapter(adapter_error) = error else {
+        panic!("expected adapter POLICY_DENIED");
+    };
+    assert_eq!(
+        adapter_error.details.as_ref().unwrap()["kind"],
+        "rejectable_sm_thumb"
+    );
+    assert_eq!(
+        adapter_error.details.as_ref().unwrap()["window_class"],
+        "rejectable_sm_thumb"
+    );
+    assert!(adapter.take_target().is_none());
+}
+
+#[test]
+fn app_screenshot_path_must_refuse_rejectable_sm_thumb() {
+    let thumb = rejectable_sm_thumb_window("w-thumb", 700);
+    let adapter = ScreenshotAdapter {
+        displays: vec![display("main", true, 2.0)],
+        windows: vec![thumb],
+        target: Mutex::new(None),
+        stopped: false,
+    };
+    let mut request = args();
+    request.app = Some("Example".into());
+
+    let error = screenshot::execute(request, &adapter)
+        .expect_err("RejectableSmThumb must be refused on screenshot --app bind");
+
+    assert_eq!(error.code(), "POLICY_DENIED");
+    let crate::AppError::Adapter(adapter_error) = error else {
+        panic!("expected adapter POLICY_DENIED");
+    };
+    assert_eq!(
+        adapter_error.details.as_ref().unwrap()["kind"],
+        "rejectable_sm_thumb"
+    );
+    assert_eq!(
+        adapter_error.details.as_ref().unwrap()["window_class"],
+        "rejectable_sm_thumb"
+    );
+    assert_eq!(
+        adapter_error.details.as_ref().unwrap()["window_id"],
+        "w-thumb"
+    );
+    assert!(adapter.take_target().is_none());
+}
+
 #[path = "screenshot_output_tests.rs"]
 mod output_tests;

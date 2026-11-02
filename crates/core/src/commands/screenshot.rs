@@ -1,5 +1,5 @@
 use crate::{
-    AdapterError, AppError, Deadline, ErrorCode,
+    AdapterError, AppError, Deadline, ErrorCode, refuse_rejectable_sm_thumb,
     adapter::{PlatformAdapter, ScreenshotTarget, WindowFilter},
     system::process_state::ProcessState,
 };
@@ -133,6 +133,7 @@ fn resolve_target(
             adapter,
             deadline,
         )?;
+        refuse_rejectable_sm_thumb(&win)?;
         return Ok(ScreenshotTarget::ExactWindow(win));
     }
 
@@ -178,7 +179,11 @@ fn select_unique_window(
             adapter,
             deadline,
         )),
-        1 => Ok(candidates.swap_remove(0)),
+        1 => {
+            let window = candidates.swap_remove(0);
+            refuse_rejectable_sm_thumb(&window)?;
+            Ok(window)
+        }
         _ => Err(AdapterError::ambiguous_target(format!(
             "Multiple windows matched id '{window_id}'"
         ))

@@ -211,6 +211,13 @@ fn windows_for_app(
     Ok(adapter.list_windows(&filter, deadline)?)
 }
 
+
+fn require_driveable_full_ax(window: WindowInfo) -> Result<WindowInfo, AppError> {
+    Ok(crate::resolve_for_headless_action(window)
+        .map_err(|error| AppError::Adapter(error.into_adapter_error().unsent()))?
+        .into_window_info())
+}
+
 pub(crate) fn resolve_window(
     adapter: &dyn PlatformAdapter,
     app_name: Option<&str>,
@@ -225,7 +232,7 @@ pub(crate) fn resolve_window(
     let windows = adapter.list_windows(&filter, deadline)?;
 
     if let Some(wid) = window_id {
-        windows.into_iter().find(|w| w.id == wid).ok_or_else(|| {
+        let window = windows.into_iter().find(|w| w.id == wid).ok_or_else(|| {
             AppError::Adapter(
                 crate::AdapterError::new(
                     crate::ErrorCode::WindowNotFound,
@@ -234,7 +241,8 @@ pub(crate) fn resolve_window(
                 .with_suggestion("Run 'list-windows' to see available window IDs.")
                 .unsent(),
             )
-        })
+        })?;
+        return require_driveable_full_ax(window);
     } else if let Some(app) = app_name {
         if windows.is_empty() {
             if let Err(AppError::Adapter(error)) =
@@ -245,7 +253,7 @@ pub(crate) fn resolve_window(
                 }
             }
         }
-        crate::system::window_lookup::select_window(
+        require_driveable_full_ax(crate::system::window_lookup::select_window(
             windows,
             crate::AdapterError::new(
                 crate::ErrorCode::WindowNotFound,
@@ -253,13 +261,13 @@ pub(crate) fn resolve_window(
             )
             .with_suggestion("Wait for the app to present a window, or run 'list-windows --app'."),
             "More than one window matches the target",
-        )
+        )?)
     } else {
-        crate::system::window_lookup::select_window(
+        require_driveable_full_ax(crate::system::window_lookup::select_window(
             windows,
             crate::AdapterError::new(crate::ErrorCode::WindowNotFound, "No focused window found"),
             "More than one window matches the target",
-        )
+        )?)
     }
 }
 

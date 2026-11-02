@@ -1,6 +1,6 @@
 use serde_json::json;
 
-use crate::{AdapterError, AppError, ErrorCode, PlatformAdapter, ProcessIdentity, WindowInfo};
+use crate::{AdapterError, AppError, ErrorCode, PlatformAdapter, ProcessIdentity, WindowInfo, refuse_rejectable_sm_thumb};
 
 pub(crate) fn focus_entry_window(
     entry: &crate::RefEntry,
@@ -46,6 +46,7 @@ pub(crate) fn focus_exact_window(
     lease: &crate::InteractionLease,
 ) -> Result<WindowInfo, AppError> {
     let live = adapter.resolve_window_strict(expected, lease.deadline())?;
+    refuse_rejectable_sm_thumb(&live)?;
     if live.id != expected.id
         || live.pid != expected.pid
         || live.process_instance != expected.process_instance
