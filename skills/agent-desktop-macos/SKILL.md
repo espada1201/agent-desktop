@@ -47,6 +47,8 @@ Read the core skill first (`agent-desktop skills get desktop`) for the observe, 
 
 **Chromium and Electron.** agent-desktop switches on the web accessibility of a Chromium renderer automatically when it needs it. For a dense running app, use `snapshot --skeleton -i --compact`, then drill with `--root @ref`.
 
+For dense Chromium/Electron without stealing the user's active tab, prefer Quiet CDP via `agent-browser` (AlwaysQuiet / no `bringToFront`) on a separate window or profile — never click another tab in the user's same active browser window. Prefer headless `--app` / `--window-id` on DriveableFullAx windows even when buried. Never `focus-window` or rearrange Stage Manager strip thumbs (`POLICY_DENIED` / `rejectable_sm_thumb`).
+
 **Identity.** `launch` accepts a display name (`"System Settings"`) or a bundle ID (`com.apple.systempreferences`). Other commands take the display name through `--app`. Window IDs such as `w-4521` stay valid for the life of the window. Find them with `list-windows`.
 
 **Keys.** The primary modifier is `cmd`: `press cmd+c`, `press cmd+s`. Quit shortcuts such as `cmd+q`, `cmd+shift+q`, `cmd+alt+esc`, `ctrl+cmd+q` and `cmd+shift+delete` return `POLICY_DENIED` unless you pass `--force`. To quit an app, use `close-app`. Punctuation keys work in combos, as the symbol (`,` `.` `/` `;` `'` `[` `]` `\` `-` `=` `` ` ``) or by name (`comma`, `period`, `slash`, `semicolon`, `quote`, `leftbracket`, `rightbracket`, `backslash`, `minus`, `equal`, `grave`). Each one is sent with the key that types it in the active keyboard layout, so `press cmd+,` opens Settings on ANSI and JIS keyboards alike.

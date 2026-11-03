@@ -68,6 +68,14 @@ Action results carry `data.disposition` and errors carry `error.disposition`, ea
 
 Ref actions are headless by default. They use semantic accessibility calls and do not take focus, move the cursor, synthesize keys or use the clipboard. If no semantic path exists, the action fails closed. Use the global `--headed` flag only when the user explicitly permits physical input, such as double-click, hover, drag, or focus. Never switch to headed mode to recover from a headless failure. Raw coordinates (`--xy`) never imply focus. Which actions need `--headed` differs by OS: read the platform skill.
 
+## Multitask / focus policy (hard rules)
+
+1. Never `focus-window`, bring apps forward, or rearrange the Stage Manager strip to "get" a window.
+2. Never click another tab in the user's active same browser window — that steals their view. Use a separate browser window or profile (side display OK), or Quiet CDP via `agent-browser` (AlwaysQuiet / no `bringToFront`).
+3. Prefer headless `--app` / `--window-id` on DriveableFullAx windows even when buried behind the front app.
+4. Stage Manager strip / collapsed thumbs are not driveable — do not screenshot, focus, or click them; expect `POLICY_DENIED` / `rejectable_sm_thumb`. Keep real full windows open (e.g. side display) instead of relying on strip thumbs.
+5. Headless is default; `--headed` only with explicit user allow for physical input — never as recovery from a headless miss.
+
 ## References
 
 Load one only when you need it: `agent-desktop skills get desktop <reference>`.
