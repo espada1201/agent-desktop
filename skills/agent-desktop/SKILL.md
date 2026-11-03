@@ -76,6 +76,14 @@ Ref actions are headless by default. They use semantic accessibility calls and d
 4. Stage Manager strip / collapsed thumbs are not driveable — do not screenshot, focus, or click them; expect `POLICY_DENIED` / `rejectable_sm_thumb`. Keep real full windows open (e.g. side display) instead of relying on strip thumbs.
 5. Headless is default; `--headed` only with explicit user allow for physical input — never as recovery from a headless miss.
 
+
+## FOREGROUND_KEEP / Quiet CDP (hard rules)
+
+1. Never visually switch the user's OS-active browser tab to do agent work. Leave the tab their mouse is on alone.
+2. Agent routing uses Quiet CDP only: `agent-browser` AlwaysQuiet / no `Page.bringToFront` on ordinary `tab` / `tab new` / screenshot / click.
+3. `bringtofront` is intentional steal only — use it solely when the user asked to park/restore a visible tab, never as part of a quiet screenshot/click loop.
+4. To prove background work while the user stays on tab N: park/confirm AppleScript `activeTab` = N, then quiet-route to other tabs for CDP screenshot/click; re-assert `activeTab` still N (`FOREGROUND_KEEP`).
+5. Prefer a dedicated CDP profile/window (side display OK). Never click another tab in the user's same active window via AX.
 ## References
 
 Load one only when you need it: `agent-desktop skills get desktop <reference>`.

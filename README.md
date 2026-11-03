@@ -105,6 +105,16 @@ Use `agent-desktop` to see and operate desktop apps. Before the first use, run
 
 Every command prints one envelope with `ok` and either `data` or `error`. An error carries a `code`, a `disposition` and usually a `suggestion`; retry only when `error.disposition.retry` is `safe`. The contract, error codes and exit codes are in [docs/json-output.md](docs/json-output.md).
 
+
+## Multitask / Quiet CDP
+
+Keep the user's OS-active browser tab where they left it. Do not visually switch it for agent work.
+
+Route background tab work through Quiet CDP (`agent-browser` AlwaysQuiet — no `Page.bringToFront` on ordinary `tab` / `tab new` / screenshot / click). Use `bringtofront` only when the user asked to park or restore a visible tab.
+
+Operator recipe: park/confirm AppleScript `activeTab` = N (`FOREGROUND_KEEP`), quiet-route other tabs, re-assert `activeTab` still N. Prefer a dedicated CDP profile or window (side display OK). Never AX-click another tab in the user's same active window.
+
+Hard rules also live in the `agent-desktop` / `agent-desktop-macos` skills (no `focus-window`, headless `DriveableFullAx`, Stage Manager thumb `POLICY_DENIED` / `rejectable_sm_thumb`, headed only with explicit allow). Partner CLI: `agent-browser`.
 ## Commands
 
 It ships 60 command names, 56 operational commands. The other four (`key-down`, `key-up`, `mouse-down`, `mouse-up`) refuse to run until a daemon can release a held key or button.
